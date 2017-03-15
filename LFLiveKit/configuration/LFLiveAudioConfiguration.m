@@ -13,7 +13,7 @@
 
 #pragma mark -- LifyCycle
 + (instancetype)defaultConfiguration {
-    LFLiveAudioConfiguration *audioConfig = [LFLiveAudioConfiguration defaultConfigurationForQuality:LFLiveAudioQuality_Default];
+    LFLiveAudioConfiguration *audioConfig = [LFLiveAudioConfiguration defaultConfigurationForQuality:LFLiveAudioQualityDefault];
     return audioConfig;
 }
 
@@ -21,29 +21,29 @@
     LFLiveAudioConfiguration *audioConfig = [LFLiveAudioConfiguration new];
     audioConfig.numberOfChannels = 2;
     switch (audioQuality) {
-    case LFLiveAudioQuality_Low: {
-        audioConfig.audioBitrate = audioConfig.numberOfChannels == 1 ? LFLiveAudioBitRate_32Kbps : LFLiveAudioBitRate_64Kbps;
-        audioConfig.audioSampleRate = LFLiveAudioSampleRate_16000Hz;
+    case LFLiveAudioQualityLow: {
+        audioConfig.bitRate = audioConfig.numberOfChannels == 1 ? LFLiveAudioBitRate32Kbps : LFLiveAudioBitRate64Kbps;
+        audioConfig.sampleRate = LFLiveAudioSampleRate16000Hz;
     }
         break;
-    case LFLiveAudioQuality_Medium: {
-        audioConfig.audioBitrate = LFLiveAudioBitRate_96Kbps;
-        audioConfig.audioSampleRate = LFLiveAudioSampleRate_44100Hz;
+    case LFLiveAudioQualityMedium: {
+        audioConfig.bitRate = LFLiveAudioBitRate96Kbps;
+        audioConfig.sampleRate = LFLiveAudioSampleRate44100Hz;
     }
         break;
-    case LFLiveAudioQuality_High: {
-        audioConfig.audioBitrate = LFLiveAudioBitRate_128Kbps;
-        audioConfig.audioSampleRate = LFLiveAudioSampleRate_44100Hz;
+    case LFLiveAudioQualityHigh: {
+        audioConfig.bitRate = LFLiveAudioBitRate128Kbps;
+        audioConfig.sampleRate = LFLiveAudioSampleRate44100Hz;
     }
         break;
-    case LFLiveAudioQuality_VeryHigh: {
-        audioConfig.audioBitrate = LFLiveAudioBitRate_128Kbps;
-        audioConfig.audioSampleRate = LFLiveAudioSampleRate_48000Hz;
+    case LFLiveAudioQualityVeryHigh: {
+        audioConfig.bitRate = LFLiveAudioBitRate128Kbps;
+        audioConfig.sampleRate = LFLiveAudioSampleRate48000Hz;
     }
         break;
     default:{
-        audioConfig.audioBitrate = LFLiveAudioBitRate_96Kbps;
-        audioConfig.audioSampleRate = LFLiveAudioSampleRate_44100Hz;
+        audioConfig.bitRate = LFLiveAudioBitRate96Kbps;
+        audioConfig.sampleRate = LFLiveAudioSampleRate44100Hz;
     }
         break;
     }
@@ -63,16 +63,16 @@
 }
 
 #pragma mark Setter
-- (void)setAudioSampleRate:(LFLiveAudioSampleRate)audioSampleRate {
-    _audioSampleRate = audioSampleRate;
-    NSInteger sampleRateIndex = [self sampleRateIndex:audioSampleRate];
+- (void)setSampleRate:(LFLiveAudioSampleRate)sampleRate {
+    _sampleRate = sampleRate;
+    NSInteger sampleRateIndex = [self sampleRateIndex:sampleRate];
     self.asc[0] = 0x10 | ((sampleRateIndex>>1) & 0x7);
     self.asc[1] = ((sampleRateIndex & 0x1)<<7) | ((self.numberOfChannels & 0xF) << 3);
 }
 
 - (void)setNumberOfChannels:(NSUInteger)numberOfChannels {
     _numberOfChannels = numberOfChannels;
-    NSInteger sampleRateIndex = [self sampleRateIndex:self.audioSampleRate];
+    NSInteger sampleRateIndex = [self sampleRateIndex:self.sampleRate];
     self.asc[0] = 0x10 | ((sampleRateIndex>>1) & 0x7);
     self.asc[1] = ((sampleRateIndex & 0x1)<<7) | ((numberOfChannels & 0xF) << 3);
 }
@@ -133,16 +133,16 @@
 #pragma mark -- Encoder
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeObject:@(self.numberOfChannels) forKey:@"numberOfChannels"];
-    [aCoder encodeObject:@(self.audioSampleRate) forKey:@"audioSampleRate"];
-    [aCoder encodeObject:@(self.audioBitrate) forKey:@"audioBitrate"];
+    [aCoder encodeObject:@(self.sampleRate) forKey:@"sampleRate"];
+    [aCoder encodeObject:@(self.bitRate) forKey:@"bitrate"];
     [aCoder encodeObject:[NSString stringWithUTF8String:self.asc] forKey:@"asc"];
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super init];
     _numberOfChannels = [[aDecoder decodeObjectForKey:@"numberOfChannels"] unsignedIntegerValue];
-    _audioSampleRate = [[aDecoder decodeObjectForKey:@"audioSampleRate"] unsignedIntegerValue];
-    _audioBitrate = [[aDecoder decodeObjectForKey:@"audioBitrate"] unsignedIntegerValue];
+    _sampleRate = [[aDecoder decodeObjectForKey:@"sampleRate"] unsignedIntegerValue];
+    _bitRate = [[aDecoder decodeObjectForKey:@"bitRate"] unsignedIntegerValue];
     _asc = strdup([[aDecoder decodeObjectForKey:@"asc"] cStringUsingEncoding:NSUTF8StringEncoding]);
     return self;
 }
@@ -155,18 +155,18 @@
     } else {
         LFLiveAudioConfiguration *object = other;
         return object.numberOfChannels == self.numberOfChannels &&
-               object.audioBitrate == self.audioBitrate &&
+               object.bitRate == self.bitRate &&
                strcmp(object.asc, self.asc) == 0 &&
-               object.audioSampleRate == self.audioSampleRate;
+               object.sampleRate == self.sampleRate;
     }
 }
 
 - (NSUInteger)hash {
     NSUInteger hash = 0;
     NSArray *values = @[@(_numberOfChannels),
-                        @(_audioSampleRate),
+                        @(_sampleRate),
                         [NSString stringWithUTF8String:self.asc],
-                        @(_audioBitrate)];
+                        @(_bitRate)];
 
     for (NSObject *value in values) {
         hash ^= value.hash;
@@ -183,8 +183,8 @@
     NSMutableString *desc = @"".mutableCopy;
     [desc appendFormat:@"<LFLiveAudioConfiguration: %p>", self];
     [desc appendFormat:@" numberOfChannels:%zi", self.numberOfChannels];
-    [desc appendFormat:@" audioSampleRate:%zi", self.audioSampleRate];
-    [desc appendFormat:@" audioBitrate:%zi", self.audioBitrate];
+    [desc appendFormat:@" sampleRate:%zi", self.sampleRate];
+    [desc appendFormat:@" bitRate:%zi", self.bitRate];
     [desc appendFormat:@" audioHeader:%@", [NSString stringWithUTF8String:self.asc]];
     return desc;
 }

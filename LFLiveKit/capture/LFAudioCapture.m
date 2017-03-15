@@ -65,7 +65,7 @@ NSString *const LFAudioComponentFailedToCreateNotification = @"LFAudioComponentF
         AudioUnitSetProperty(self.componetInstance, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &flagOne, sizeof(flagOne));
         
         AudioStreamBasicDescription desc = {0};
-        desc.mSampleRate = _configuration.audioSampleRate;
+        desc.mSampleRate = _configuration.sampleRate;
         desc.mFormatID = kAudioFormatLinearPCM;
         desc.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
         desc.mChannelsPerFrame = (UInt32)_configuration.numberOfChannels;
@@ -86,7 +86,7 @@ NSString *const LFAudioComponentFailedToCreateNotification = @"LFAudioComponentF
             [self handleAudioComponentCreationFailure];
         }
         
-        [session setPreferredSampleRate:_configuration.audioSampleRate error:nil];
+        [session setPreferredSampleRate:_configuration.sampleRate error:nil];
         [session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker | AVAudioSessionCategoryOptionInterruptSpokenAudioAndMixWithOthers error:nil];
         [session setActive:YES withOptions:kAudioSessionSetActiveFlag_NotifyOthersOnDeactivation error:nil];
         
@@ -247,8 +247,8 @@ static OSStatus handleInputBuffer(void *inRefCon,
         }
 
         if (!status) {
-            if (source.delegate && [source.delegate respondsToSelector:@selector(captureOutput:audioData:)]) {
-                [source.delegate captureOutput:source audioData:[NSData dataWithBytes:buffers.mBuffers[0].mData length:buffers.mBuffers[0].mDataByteSize]];
+            if (source.delegate && [source.delegate respondsToSelector:@selector(audioCapture:didOutputAudioData:)]) {
+                [source.delegate audioCapture:source didOutputAudioData:[NSData dataWithBytes:buffers.mBuffers[0].mData length:buffers.mBuffers[0].mDataByteSize]];
             }
         }
         return status;

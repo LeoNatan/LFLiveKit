@@ -78,7 +78,7 @@
         _videoCamera.outputImageOrientation = _configuration.outputImageOrientation;
         _videoCamera.horizontallyMirrorFrontFacingCamera = NO;
         _videoCamera.horizontallyMirrorRearFacingCamera = NO;
-        _videoCamera.frameRate = (int32_t)_configuration.videoFrameRate;
+        _videoCamera.frameRate = (int32_t)_configuration.frameRate;
     }
     return _videoCamera;
 }
@@ -99,20 +99,20 @@
     }
 }
 
-- (void)setPreView:(UIView *)preView {
+- (void)setPreviewView:(UIView *)previewView {
     if (self.gpuImageView.superview) [self.gpuImageView removeFromSuperview];
-    [preView insertSubview:self.gpuImageView atIndex:0];
-    self.gpuImageView.frame = CGRectMake(0, 0, preView.frame.size.width, preView.frame.size.height);
+    [previewView insertSubview:self.gpuImageView atIndex:0];
+    self.gpuImageView.frame = CGRectMake(0, 0, previewView.frame.size.width, previewView.frame.size.height);
 }
 
-- (UIView *)preView {
+- (UIView *)previewView {
     return self.gpuImageView.superview;
 }
 
 - (void)setCaptureDevicePosition:(AVCaptureDevicePosition)captureDevicePosition {
     if(captureDevicePosition == self.videoCamera.cameraPosition) return;
     [self.videoCamera rotateCamera];
-    self.videoCamera.frameRate = (int32_t)_configuration.videoFrameRate;
+    self.videoCamera.frameRate = (int32_t)_configuration.frameRate;
     [self reloadMirror];
 }
 
@@ -234,7 +234,7 @@
 - (UIView *)waterMarkContentView{
     if(!_waterMarkContentView){
         _waterMarkContentView = [UIView new];
-        _waterMarkContentView.frame = CGRectMake(0, 0, self.configuration.videoSize.width, self.configuration.videoSize.height);
+        _waterMarkContentView.frame = CGRectMake(0, 0, self.configuration.size.width, self.configuration.size.height);
         _waterMarkContentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     }
     return _waterMarkContentView;
@@ -259,7 +259,7 @@
 
 - (GPUImageMovieWriter*)movieWriter{
     if(!_movieWriter){
-        _movieWriter = [[GPUImageMovieWriter alloc] initWithMovieURL:self.saveLocalVideoPath size:self.configuration.videoSize];
+        _movieWriter = [[GPUImageMovieWriter alloc] initWithMovieURL:self.saveLocalVideoPath size:self.configuration.size];
         _movieWriter.encodingLiveVideo = YES;
         _movieWriter.shouldPassthroughAudio = YES;
         self.videoCamera.audioEncodingTarget = self.movieWriter;
@@ -273,8 +273,8 @@
     @autoreleasepool {
         GPUImageFramebuffer *imageFramebuffer = output.framebufferForOutput;
         CVPixelBufferRef pixelBuffer = [imageFramebuffer pixelBuffer];
-        if (pixelBuffer && _self.delegate && [_self.delegate respondsToSelector:@selector(captureOutput:pixelBuffer:)]) {
-            [_self.delegate captureOutput:_self pixelBuffer:pixelBuffer];
+        if (pixelBuffer && _self.delegate && [_self.delegate respondsToSelector:@selector(videoCapture:didOutputPixelBuffer:)]) {
+            [_self.delegate videoCapture:_self didOutputPixelBuffer:pixelBuffer];
         }
     }
 }
@@ -324,10 +324,10 @@
         if(self.saveLocalVideo) [self.output addTarget:self.movieWriter];
     }
     
-    [self.filter forceProcessingAtSize:self.configuration.videoSize];
-    [self.output forceProcessingAtSize:self.configuration.videoSize];
-    [self.blendFilter forceProcessingAtSize:self.configuration.videoSize];
-    [self.uiElementInput forceProcessingAtSize:self.configuration.videoSize];
+    [self.filter forceProcessingAtSize:self.configuration.size];
+    [self.output forceProcessingAtSize:self.configuration.size];
+    [self.blendFilter forceProcessingAtSize:self.configuration.size];
+    [self.uiElementInput forceProcessingAtSize:self.configuration.size];
     
     
     //< 输出数据

@@ -7,29 +7,29 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#include <CoreGraphics/CGGeometry.h>
 
 @interface LFLiveDebug : NSObject
 
-@property (nonatomic, copy) NSString *streamId;                         ///< 流id
-@property (nonatomic, copy) NSString *uploadUrl;                        ///< 流地址
-@property (nonatomic, assign) CGSize videoSize;                         ///< 上传的分辨率
-@property (nonatomic, assign) BOOL isRtmp;                              ///< 上传方式（TCP or RTMP）
+@property (nonatomic, copy) NSString *streamId;
+@property (nonatomic, copy) NSString *uploadUrl;
+@property (nonatomic, assign) CGSize videoSize;
+@property (nonatomic, assign) BOOL isRtmp;
 
-@property (nonatomic, assign) CGFloat elapsedMilli;                     ///< 距离上次统计的时间 单位ms
-@property (nonatomic, assign) CGFloat timeStamp;                        ///< 当前的时间戳，从而计算1s内数据
-@property (nonatomic, assign) CGFloat dataFlow;                         ///< 总流量
-@property (nonatomic, assign) CGFloat bandwidth;                        ///< 1s内总带宽
-@property (nonatomic, assign) CGFloat currentBandwidth;                 ///< 上次的带宽
+@property (nonatomic, assign) double elapsedMilli;                     ///< 距离上次统计的时间 单位ms
+@property (nonatomic, assign) double timeStamp;
+@property (nonatomic, assign) NSUInteger dataFlow;                         ///< 总流量
+@property (nonatomic, assign) double bandwidth; //Over the period of one second
+@property (nonatomic, assign) double currentBandwidth; //Last bandwidth measurement
 
-@property (nonatomic, assign) NSInteger dropFrame;                      ///< 丢掉的帧数
-@property (nonatomic, assign) NSInteger totalFrame;                     ///< 总帧数
+@property (nonatomic, assign) NSUInteger droppedFramesCount;
+@property (nonatomic, assign) NSUInteger totalFramesCount;
 
-@property (nonatomic, assign) NSInteger capturedAudioCount;             ///< 1s内音频捕获个数
-@property (nonatomic, assign) NSInteger capturedVideoCount;             ///< 1s内视频捕获个数
-@property (nonatomic, assign) NSInteger currentCapturedAudioCount;      ///< 上次的音频捕获个数
-@property (nonatomic, assign) NSInteger currentCapturedVideoCount;      ///< 上次的视频捕获个数
+@property (nonatomic, assign) NSUInteger audioCaptureCount;
+@property (nonatomic, assign) NSUInteger videoCaptureCount;
+@property (nonatomic, assign) NSUInteger currentAudioCaptureCount;
+@property (nonatomic, assign) NSUInteger currentVideoCaptureCount;
 
-@property (nonatomic, assign) NSInteger unSendCount;                    ///< 未发送个数（代表当前缓冲区等待发送的）
+@property (nonatomic, assign) NSUInteger unsentFramesCount;
 
 @end

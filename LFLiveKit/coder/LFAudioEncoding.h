@@ -14,20 +14,21 @@
 
 
 @protocol LFAudioEncoding;
-/// 编码器编码后回调
+
 @protocol LFAudioEncodingDelegate <NSObject>
 @required
-- (void)audioEncoder:(nullable id<LFAudioEncoding>)encoder audioFrame:(nullable LFAudioFrame *)frame;
+- (void)audioEncoder:(nullable id<LFAudioEncoding>)encoder didOutputAudioFrame:(nullable LFAudioFrame *)frame;
 @end
 
-/// 编码器抽象的接口
 @protocol LFAudioEncoding <NSObject>
 @required
 - (void)encodeAudioData:(nullable NSData*)audioData timeStamp:(uint64_t)timeStamp;
-- (void)stopEncoder;
+- (void)stop;
 @optional
+
+@property (nonatomic, nullable, weak) id<LFAudioEncodingDelegate> delegate;
+
 - (nullable instancetype)initWithAudioStreamConfiguration:(nullable LFLiveAudioConfiguration *)configuration;
-- (void)setDelegate:(nullable id<LFAudioEncodingDelegate>)delegate;
 - (nullable NSData *)adtsData:(NSInteger)channel rawDataLength:(NSInteger)rawDataLength;
 @end
 

@@ -19,7 +19,6 @@
     BOOL enabledWriteVideoFile;
 }
 @property (nonatomic, strong) LFLiveVideoConfiguration *configuration;
-@property (nonatomic, weak) id<LFVideoEncodingDelegate> h264Delegate;
 @property (nonatomic) BOOL isBackGround;
 @property (nonatomic) NSInteger currentVideoBitRate;
 @property (nonatomic, strong) dispatch_queue_t sendQueue;
@@ -38,6 +37,8 @@
 @end
 
 @implementation LFH264VideoEncoder
+
+@synthesize delegate=_delegate;
 
 #pragma mark -- LifeCycle
 - (instancetype)initWithVideoStreamConfiguration:(LFLiveVideoConfiguration *)configuration {
@@ -60,7 +61,7 @@
     [self initForFilePath];
 #endif
     
-    _encoder = [LFAVEncoder encoderForHeight:(int)_configuration.videoSize.height andWidth:(int)_configuration.videoSize.width bitrate:(int)_configuration.videoBitRate];
+    _encoder = [LFAVEncoder encoderForHeight:(int)_configuration.size.height andWidth:(int)_configuration.size.width bitrate:(int)_configuration.bitRate];
     [_encoder encodeWithBlock:^int(NSArray* dataArray, CMTimeValue ptsValue) {
         [self incomingVideoFrames:dataArray ptsValue:ptsValue];
         return 0;
@@ -118,10 +119,6 @@
     return _currentVideoBitRate;
 }
 
-- (void)setDelegate:(id<LFVideoEncodingDelegate>)delegate{
-    _h264Delegate = delegate;
-}
-
 - (void)encodeVideoData:(CVPixelBufferRef)pixelBuffer timeStamp:(uint64_t)timeStamp {
   
     CVPixelBufferLockBaseAddress(pixelBuffer, 0);
@@ -129,7 +126,7 @@
     CMVideoFormatDescriptionCreateForImageBuffer(NULL, pixelBuffer, &videoInfo);
     
     CMTime frameTime = CMTimeMake(timeStamp, 1000);
-    CMTime duration = CMTimeMake(1, (int32_t)_configuration.videoFrameRate);
+    CMTime duration = CMTimeMake(1, (int32_t)_configuration.frameRate);
     CMSampleTimingInfo timing = {duration, frameTime, kCMTimeInvalid};
     
     CMSampleBufferRef sampleBuffer = NULL;
@@ -201,8 +198,8 @@
         videoFrame.sps = _spsData;
         videoFrame.pps = _ppsData;
 
-        if(self.h264Delegate && [self.h264Delegate respondsToSelector:@selector(videoEncoder:videoFrame:)]){
-            [self.h264Delegate videoEncoder:self videoFrame:videoFrame];
+        if(self.delegate && [self.delegate respondsToSelector:@selector(videoEncoder:didOutputVideoFrame:)]){
+            [self.delegate videoEncoder:self didOutputVideoFrame:videoFrame];
         }
     }
     

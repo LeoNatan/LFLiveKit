@@ -195,8 +195,8 @@ SAVC(mp4a);
             }
 
             //debug更新
-            _self.debugInfo.totalFrame++;
-            _self.debugInfo.dropFrame += _self.buffer.lastDropFrames;
+            _self.debugInfo.totalFramesCount++;
+            _self.debugInfo.droppedFramesCount += _self.buffer.lastDropFrames;
             _self.buffer.lastDropFrames = 0;
 
             _self.debugInfo.dataFlow += frame.data.length;
@@ -204,22 +204,22 @@ SAVC(mp4a);
             if (_self.debugInfo.elapsedMilli < 1000) {
                 _self.debugInfo.bandwidth += frame.data.length;
                 if ([frame isKindOfClass:[LFAudioFrame class]]) {
-                    _self.debugInfo.capturedAudioCount++;
+                    _self.debugInfo.audioCaptureCount++;
                 } else {
-                    _self.debugInfo.capturedVideoCount++;
+                    _self.debugInfo.videoCaptureCount++;
                 }
 
-                _self.debugInfo.unSendCount = _self.buffer.list.count;
+                _self.debugInfo.unsentFramesCount = _self.buffer.list.count;
             } else {
                 _self.debugInfo.currentBandwidth = _self.debugInfo.bandwidth;
-                _self.debugInfo.currentCapturedAudioCount = _self.debugInfo.capturedAudioCount;
-                _self.debugInfo.currentCapturedVideoCount = _self.debugInfo.capturedVideoCount;
+                _self.debugInfo.currentAudioCaptureCount = _self.debugInfo.audioCaptureCount;
+                _self.debugInfo.currentVideoCaptureCount = _self.debugInfo.videoCaptureCount;
                 if (_self.delegate && [_self.delegate respondsToSelector:@selector(socketDebug:debugInfo:)]) {
                     [_self.delegate socketDebug:_self debugInfo:_self.debugInfo];
                 }
                 _self.debugInfo.bandwidth = 0;
-                _self.debugInfo.capturedAudioCount = 0;
-                _self.debugInfo.capturedVideoCount = 0;
+                _self.debugInfo.audioCaptureCount = 0;
+                _self.debugInfo.videoCaptureCount = 0;
                 _self.debugInfo.timeStamp = CACurrentMediaTime() * 1000;
             }
             
@@ -321,20 +321,20 @@ Failed:
     enc = AMF_EncodeNamedNumber(enc, pend, &av_fileSize, 0.0);
 
     // videosize
-    enc = AMF_EncodeNamedNumber(enc, pend, &av_width, _stream.videoConfiguration.videoSize.width);
-    enc = AMF_EncodeNamedNumber(enc, pend, &av_height, _stream.videoConfiguration.videoSize.height);
+    enc = AMF_EncodeNamedNumber(enc, pend, &av_width, _stream.videoConfiguration.size.width);
+    enc = AMF_EncodeNamedNumber(enc, pend, &av_height, _stream.videoConfiguration.size.height);
 
     // video
     enc = AMF_EncodeNamedString(enc, pend, &av_videocodecid, &av_avc1);
 
-    enc = AMF_EncodeNamedNumber(enc, pend, &av_videodatarate, _stream.videoConfiguration.videoBitRate / 1000.f);
-    enc = AMF_EncodeNamedNumber(enc, pend, &av_framerate, _stream.videoConfiguration.videoFrameRate);
+    enc = AMF_EncodeNamedNumber(enc, pend, &av_videodatarate, _stream.videoConfiguration.bitRate / 1000.f);
+    enc = AMF_EncodeNamedNumber(enc, pend, &av_framerate, _stream.videoConfiguration.frameRate);
 
     // audio
     enc = AMF_EncodeNamedString(enc, pend, &av_audiocodecid, &av_mp4a);
-    enc = AMF_EncodeNamedNumber(enc, pend, &av_audiodatarate, _stream.audioConfiguration.audioBitrate);
+    enc = AMF_EncodeNamedNumber(enc, pend, &av_audiodatarate, _stream.audioConfiguration.bitRate);
 
-    enc = AMF_EncodeNamedNumber(enc, pend, &av_audiosamplerate, _stream.audioConfiguration.audioSampleRate);
+    enc = AMF_EncodeNamedNumber(enc, pend, &av_audiosamplerate, _stream.audioConfiguration.sampleRate);
     enc = AMF_EncodeNamedNumber(enc, pend, &av_audiosamplesize, 16.0);
     enc = AMF_EncodeNamedBoolean(enc, pend, &av_stereo, _stream.audioConfiguration.numberOfChannels == 2);
 

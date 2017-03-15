@@ -29,7 +29,7 @@ typedef NS_ENUM (NSUInteger, LFLiveState){
 };
 
 typedef NS_ENUM (NSUInteger, LFLiveSocketErrorCode) {
-    LFLiveSocketError_PreView = 201,              ///< 预览失败
+    LFLiveSocketError_Preview = 201,              ///< 预览失败
     LFLiveSocketError_GetStreamInfo = 202,        ///< 获取流媒体信息失败
     LFLiveSocketError_ConnectSocket = 203,        ///< 连接socket失败
     LFLiveSocketError_Verification = 204,         ///< 验证服务器失败

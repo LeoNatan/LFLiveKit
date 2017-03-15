@@ -17,7 +17,6 @@
     BOOL enabledWriteVideoFile;
 }
 @property (nonatomic, strong) LFLiveAudioConfiguration *configuration;
-@property (nonatomic, weak) id<LFAudioEncodingDelegate> aacDeleage;
 
 @end
 
@@ -51,9 +50,8 @@
 }
 
 #pragma mark -- LFAudioEncoder
-- (void)setDelegate:(id<LFAudioEncodingDelegate>)delegate {
-    _aacDeleage = delegate;
-}
+
+@synthesize delegate=_delegate;
 
 - (void)encodeAudioData:(nullable NSData*)audioData timeStamp:(uint64_t)timeStamp {
     if (![self createAudioConvert]) {
@@ -120,8 +118,8 @@
     exeData[0] = _configuration.asc[0];
     exeData[1] = _configuration.asc[1];
     audioFrame.audioInfo = [NSData dataWithBytes:exeData length:2];
-    if (self.aacDeleage && [self.aacDeleage respondsToSelector:@selector(audioEncoder:audioFrame:)]) {
-        [self.aacDeleage audioEncoder:self audioFrame:audioFrame];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(audioEncoder:didOutputAudioFrame:)]) {
+        [self.delegate audioEncoder:self didOutputAudioFrame:audioFrame];
     }
     
     if (self->enabledWriteVideoFile) {
@@ -132,7 +130,7 @@
     
 }
 
-- (void)stopEncoder {
+- (void)stop {
     
 }
 
@@ -143,7 +141,7 @@
     }
     
     AudioStreamBasicDescription inputFormat = {0};
-    inputFormat.mSampleRate = _configuration.audioSampleRate;
+    inputFormat.mSampleRate = _configuration.sampleRate;
     inputFormat.mFormatID = kAudioFormatLinearPCM;
     inputFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
     inputFormat.mChannelsPerFrame = (UInt32)_configuration.numberOfChannels;
@@ -174,7 +172,7 @@
     };
     
     OSStatus result = AudioConverterNewSpecific(&inputFormat, &outputFormat, 2, requestedCodecs, &m_converter);;
-    UInt32 outputBitrate = _configuration.audioBitrate;
+    UInt32 outputBitrate = _configuration.bitRate;
     UInt32 propSize = sizeof(outputBitrate);
     
     
@@ -212,7 +210,7 @@ OSStatus inputDataProc(AudioConverterRef inConverter, UInt32 *ioNumberDataPacket
     // Variables Recycled by addADTStoPacket
     int profile = 2;  //AAC LC
     //39=MediaCodecInfo.CodecProfileLevel.AACObjectELD;
-    NSInteger freqIdx = [self sampleRateIndex:self.configuration.audioSampleRate];  //44.1KHz
+    NSInteger freqIdx = [self sampleRateIndex:self.configuration.sampleRate];  //44.1KHz
     int chanCfg = (int)channel;  //MPEG-4 Audio Channel Configuration. 1 Channel front-center
     NSUInteger fullLength = adtsLength + rawDataLength;
     // fill in ADTS data

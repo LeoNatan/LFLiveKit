@@ -131,25 +131,23 @@
 }
 
 #pragma mark -- CaptureDelegate
-- (void)captureOutput:(nullable LFAudioCapture *)capture audioData:(nullable NSData*)audioData {
+- (void)audioCapture:(nullable LFAudioCapture *)capture didOutputAudioData:(nullable NSData*)audioData {
     if (self.uploading) [self.audioEncoder encodeAudioData:audioData timeStamp:NOW];
 }
 
-- (void)captureOutput:(nullable LFVideoCapture *)capture pixelBuffer:(nullable CVPixelBufferRef)pixelBuffer {
+- (void)videoCapture:(nullable LFVideoCapture *)capture didOutputPixelBuffer:(nullable CVPixelBufferRef)pixelBuffer {
     if (self.uploading) [self.videoEncoder encodeVideoData:pixelBuffer timeStamp:NOW];
 }
 
 #pragma mark -- EncoderDelegate
-- (void)audioEncoder:(nullable id<LFAudioEncoding>)encoder audioFrame:(nullable LFAudioFrame *)frame {
-    //<上传  时间戳对齐
+- (void)audioEncoder:(nullable id<LFAudioEncoding>)encoder didOutputAudioFrame:(nullable LFAudioFrame *)frame {
     if (self.uploading){
         self.hasCaptureAudio = YES;
         if(self.AVAlignment) [self pushSendBuffer:frame];
     }
 }
 
-- (void)videoEncoder:(nullable id<LFVideoEncoding>)encoder videoFrame:(nullable LFVideoFrame *)frame {
-    //<上传 时间戳对齐
+- (void)videoEncoder:(nullable id<LFVideoEncoding>)encoder didOutputVideoFrame:(nullable LFVideoFrame *)frame {
     if (self.uploading){
         if(frame.isKeyFrame && self.hasCaptureAudio) self.hasKeyFrameVideo = YES;
         if(self.AVAlignment) [self pushSendBuffer:frame];
@@ -200,13 +198,13 @@
     if((self.captureType & LFLiveCaptureMaskVideo || self.captureType & LFLiveInputMaskVideo) && self.adaptiveBitrate){
         NSUInteger videoBitRate = [self.videoEncoder videoBitRate];
         if (status == LFLiveBuffferDecline) {
-            if (videoBitRate < _videoConfiguration.videoMaxBitRate) {
+            if (videoBitRate < _videoConfiguration.maxBitRate) {
                 videoBitRate = videoBitRate + 50 * 1000;
                 [self.videoEncoder setVideoBitRate:videoBitRate];
                 NSLog(@"Increase bitrate %@", @(videoBitRate));
             }
         } else {
-            if (videoBitRate > self.videoConfiguration.videoMinBitRate) {
+            if (videoBitRate > self.videoConfiguration.minBitRate) {
                 videoBitRate = videoBitRate - 100 * 1000;
                 [self.videoEncoder setVideoBitRate:videoBitRate];
                 NSLog(@"Decline bitrate %@", @(videoBitRate));
@@ -225,14 +223,14 @@
     self.audioCaptureSource.running = _running;
 }
 
-- (void)setPreView:(UIView *)preView {
-    [self willChangeValueForKey:@"preView"];
-    [self.videoCaptureSource setPreView:preView];
-    [self didChangeValueForKey:@"preView"];
+- (void)setPreviewView:(UIView *)previewView {
+    [self willChangeValueForKey:@"previewView"];
+    [self.videoCaptureSource setPreviewView:previewView];
+    [self didChangeValueForKey:@"previewView"];
 }
 
-- (UIView *)preView {
-    return self.videoCaptureSource.preView;
+- (UIView *)previewView {
+    return self.videoCaptureSource.previewView;
 }
 
 - (void)setCaptureDevicePosition:(AVCaptureDevicePosition)captureDevicePosition {

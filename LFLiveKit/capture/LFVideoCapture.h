@@ -13,7 +13,7 @@
 @class LFVideoCapture;
 /** LFVideoCapture callback videoData */
 @protocol LFVideoCaptureDelegate <NSObject>
-- (void)captureOutput:(nullable LFVideoCapture *)capture pixelBuffer:(nullable CVPixelBufferRef)pixelBuffer;
+- (void)videoCapture:(nullable LFVideoCapture *)capture didOutputPixelBuffer:(nullable CVPixelBufferRef)pixelBuffer;
 @end
 
 @interface LFVideoCapture : NSObject
@@ -29,8 +29,8 @@
 /** The running control start capture or stop capture*/
 @property (nonatomic, assign) BOOL running;
 
-/** The preView will show OpenGL ES view*/
-@property (null_resettable, nonatomic, strong) UIView *preView;
+/** The preview will show OpenGL ES view*/
+@property (null_resettable, nonatomic, strong) UIView *previewView;
 
 /** The captureDevicePosition control camraPosition ,default front*/
 @property (nonatomic, assign) AVCaptureDevicePosition captureDevicePosition;

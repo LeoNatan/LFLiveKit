@@ -11,7 +11,7 @@
 @implementation LFLiveDebug
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"丢掉的帧数:%ld 总帧数:%ld 上次的音频捕获个数:%d 上次的视频捕获个数:%d 未发送个数:%ld 总流量:%0.f",_dropFrame,_totalFrame,_currentCapturedAudioCount,_currentCapturedVideoCount,_unSendCount,_dataFlow];
+    return [NSString stringWithFormat:@"Dropped Frames: %lu\tFrame Count: %lu\tCaptured Audio Count: %lu\tCaptured Video Count: %lu\tUnsent Count: %lu\tTotal: %lu",(unsigned long)_droppedFramesCount,(unsigned long)_totalFramesCount,(unsigned long)_currentAudioCaptureCount,(unsigned long)_currentVideoCaptureCount,(unsigned long)_unsentFramesCount,(unsigned long)_dataFlow];
 }
 
 

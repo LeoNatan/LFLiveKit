@@ -114,7 +114,7 @@ SAVC(mp4a);
     
     _isConnecting = YES;
     if (self.delegate && [self.delegate respondsToSelector:@selector(socketStatus:status:)]) {
-        [self.delegate socketStatus:self status:LFLivePending];
+        [self.delegate socketStatus:self status:LFLiveStatePending];
     }
     
     if (_rtmp != NULL) {
@@ -133,7 +133,7 @@ SAVC(mp4a);
 
 - (void)_stop {
     if (self.delegate && [self.delegate respondsToSelector:@selector(socketStatus:status:)]) {
-        [self.delegate socketStatus:self status:LFLiveStop];
+        [self.delegate socketStatus:self status:LFLiveStateStopped];
     }
     if (_rtmp != NULL) {
         PILI_RTMP_Close(_rtmp, &_error);
@@ -277,7 +277,7 @@ SAVC(mp4a);
     }
 
     if (self.delegate && [self.delegate respondsToSelector:@selector(socketStatus:status:)]) {
-        [self.delegate socketStatus:self status:LFLiveStart];
+        [self.delegate socketStatus:self status:LFLiveStateStarted];
     }
 
     [self sendMetaData];
@@ -494,10 +494,10 @@ Failed:
            
         } else if (self.retryTimes4netWorkBreaken >= self.reconnectCount) {
             if (self.delegate && [self.delegate respondsToSelector:@selector(socketStatus:status:)]) {
-                [self.delegate socketStatus:self status:LFLiveError];
+                [self.delegate socketStatus:self status:LFLiveStateError];
             }
             if (self.delegate && [self.delegate respondsToSelector:@selector(socketDidError:errorCode:)]) {
-                [self.delegate socketDidError:self errorCode:LFLiveSocketError_ReConnectTimeOut];
+                [self.delegate socketDidError:self errorCode:LFLiveSocketErrorCodeReconnectTimeOut];
             }
         }
     });
@@ -520,7 +520,7 @@ Failed:
     _sendVideoHead = NO;
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(socketStatus:status:)]) {
-        [self.delegate socketStatus:self status:LFLiveRefresh];
+        [self.delegate socketStatus:self status:LFLiveStateRefresh];
     }
     
     if (_rtmp != NULL) {
